@@ -1,3 +1,3 @@
 # diamonds
 
-git and js learn
+git and oob js learning
