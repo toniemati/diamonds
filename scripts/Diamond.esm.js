@@ -13,8 +13,10 @@ export class Diamond extends Sprite {
         const offset = {
             x: GAME_BOARD_X_OFFSET,
             y: GAME_BOARD_Y_OFFSET
-        }
-        super(x,
+        };
+
+        super(
+            x,
             y,
             DIAMOND_ORGINAL_SIZE,
             DIAMOND_ORGINAL_SIZE,
