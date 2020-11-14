@@ -10,7 +10,7 @@ export class Sprite {
         numberOfSprites = 1,
         offset = { x: 0, y: 0 },
     ) {
-        this.aplha = 255;
+        this.alpha = 255;
         this.height = height;
         this.numberOfSprites = numberOfSprites;
         this.offset = { ...offset };
