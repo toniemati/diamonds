@@ -15,7 +15,7 @@ class MouseController {
         event.preventDefault();
 
         const offset = canvas.element.getBoundingClientRect();
-        const scale = Number(document.element.style.getPropertyValue(SCALE_PROPERTY));
+        const scale = Number(document.documentElement.style.getPropertyValue(SCALE_PROPERTY));
 
         this.x = (event.clientX - offset.left) / scale;
         this.y = (event.clientY - offset.top) / scale;
