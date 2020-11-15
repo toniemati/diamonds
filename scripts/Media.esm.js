@@ -17,7 +17,9 @@ class Media {
             this.musicVolume = 1;
         }
 
-        this._backgroundMusic.volume = this.musicVolume;
+        if (this._backgroundMusic) {
+            this._backgroundMusic.volume = this.musicVolume;
+        }
     }
 
     decreaseMusicVolume() {
@@ -26,7 +28,9 @@ class Media {
             this.musicVolume = 0;
         }
 
-        this._backgroundMusic.volume = this.musicVolume;
+        if (this._backgroundMusic) {
+            this._backgroundMusic.volume = this.musicVolume;
+        }
     }
 
 
@@ -36,7 +40,9 @@ class Media {
             this.soundVolume = 1;
         }
 
-        this._swapSound.volume = this.soundVolume;
+        if (this._swapSound) {
+            this._swapSound.volume = this.soundVolume;
+        }
     }
 
     decreaseSoundVolume() {
@@ -45,11 +51,13 @@ class Media {
             this.soundVolume = 0;
         }
 
-        this._swapSound.volume = this.soundVolume;
+        if (this._swapSound) {
+            this._swapSound.volume = this.soundVolume;
+        }
     }
 
     playBackgroundMusic() {
-        if (!this.allowedMusic) {
+        if (!this.allowedMusic || !this._backgroundMusic) {
             return;
         }
 
@@ -58,7 +66,9 @@ class Media {
     }
 
     stopBackgroundMusic() {
-        this._backgroundMusic.pause();
+        if (this._backgroundMusic) {
+            this._backgroundMusic.pause();
+        }
     }
 
     playSwapSound() {
@@ -116,6 +126,14 @@ class Media {
         } else {
             this.allowedMusic = true;
             this.playBackgroundMusic();
+        }
+    }
+
+    toggleSoundOnOff() {
+        if (this.allowedSound) {
+            this.allowedSound = false;
+        } else {
+            this.allowedSound = true;
         }
     }
 
