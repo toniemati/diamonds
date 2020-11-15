@@ -7,8 +7,9 @@ import { GameState } from './GameState.esm.js';
 import { mouseController } from './MouseController.esm.js';
 import { DIAMOND_SIZE, NUMBER_OF_DIAMOND_TYPES } from './Diamond.esm.js';
 import { resultScreen } from './ResultScreen.esm.js';
+import { userData } from './UserData.esm.js';
 
-const DIAMONDS_ARRAY_WIDTH = 8;
+export const DIAMONDS_ARRAY_WIDTH = 8;
 const DIAMONDS_ARRAY_HEIGHT = DIAMONDS_ARRAY_WIDTH + 1; // width invisible first line
 const LAST_ELEMENT_DIAMONDS_ARRAY = DIAMONDS_ARRAY_WIDTH * DIAMONDS_ARRAY_HEIGHT - 1;
 const SWAPING_SPEED = 8;
@@ -25,6 +26,8 @@ class Game extends Common {
         window.removeEventListener(DATALOADED_EVENT_NAME, this.playLevel);
         this.gameState = new GameState(level, numberOfMovements, pointsToWin, board, media.diamondsSprite);
         this.changeVisibilityScreen(canvas.element, VISIBLE_SCREEN);
+        media.isInLevel = true;
+        media.playBackgroundMusic();
         this.animate();
     }
 
@@ -39,6 +42,7 @@ class Game extends Common {
         this.clearMatched();
         canvas.drawGameOnCanvas(this.gameState);
         this.gameState.getGameBoard().forEach(diamond => diamond.draw());
+        this.checkPosibilityMovement();
         this.checkEndOfGame();
     }
 
@@ -88,6 +92,7 @@ class Game extends Common {
             }
 
             this.swapDiamonds();
+            media.playSwapSound();
 
             this.gameState.setIsSwaping(true);
             this.gameState.decreasePointsMovement();
@@ -233,21 +238,208 @@ class Game extends Common {
         });
     }
 
+    checkPosibilityMovement() {
+        if (this.gameState.getIsMoving()) {
+            return;
+        }
+
+        this.isPossibleToMove = this.gameState.getGameBoard().some((diamond, index, diamonds) => {
+            if (diamond.kind === EMPTY_BLOCK) {
+                return false;
+            }
+
+            //* move right => check in row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 3
+                && diamond.kind === diamonds[index + 2].kind
+                && diamond.kind === diamonds[index + 3].kind
+            ) {
+                return true;
+            }
+
+            //* move right => check if is in the middle of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 1
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 1].kind
+            ) {
+                return true;
+            }
+
+            //* move right => check if is one the top of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 2
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH * 2 + 1].kind
+            ) {
+                return true;
+            }
+
+            //* check right => check if ise on the bot of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH - 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 2
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH * 2 + 1].kind
+            ) {
+                return true;
+            }
+
+            //* move left => chceck in row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH > 2
+                && diamond.kind === diamonds[index - 2].kind
+                && diamond.kind === diamonds[index - 3].kind
+            ) {
+                return true;
+            }
+
+            //* move left => chceck if is in the mid of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > DIAMONDS_ARRAY_HEIGHT - 1
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH - 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH - 1].kind
+            ) {
+                return true;
+            }
+
+            //* move left => check if is on top of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > DIAMONDS_ARRAY_HEIGHT - 2
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH - 1].kind
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH * 2 - 1].kind
+            ) {
+                return true;
+            }
+
+            //* move left => check if is on bot of column
+            if (
+                index % DIAMONDS_ARRAY_WIDTH
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 3
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH - 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH * 2 - 1].kind
+            ) {
+                return true;
+            }
+
+            //* move down => chceck if is in column
+            if (
+                Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 3
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH * 2].kind
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH * 3].kind
+            ) {
+                return true;
+            }
+
+            //* move down => check if is in middle of row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH
+                && index % DIAMONDS_ARRAY_WIDTH > DIAMONDS_ARRAY_WIDTH - 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 1
+                && diamond.kind === diamonds.kind[index + DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds.kind[index + DIAMONDS_ARRAY_WIDTH - 1].kind
+            ) {
+                return true;
+            }
+
+            //* move down => check if is in left edge of row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 2
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 1
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH + 2].kind
+            ) {
+                return true;
+            }
+
+            //* move down => check if is in right edge of row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH > 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) < DIAMONDS_ARRAY_HEIGHT - 1
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH - 1].kind
+                && diamond.kind === diamonds[index + DIAMONDS_ARRAY_WIDTH - 2].kind
+            ) {
+                return true;
+            }
+
+            //* move up => check on column
+            if (
+                Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 3
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH * 2].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH * 3].kind
+            ) {
+                return true;
+            }
+
+            //* move up => check if is in mid of row
+            if (
+                index % DIAMONDS_ARRAY_WIDTH
+                && index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 1
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 2].kind
+            ) {
+                return true;
+            }
+
+            //* move up => check if is in left edge
+            if (
+                index % DIAMONDS_ARRAY_WIDTH < DIAMONDS_ARRAY_WIDTH - 2
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 1
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH + 2].kind
+            ) {
+                return true;
+            }
+
+            //* move up => check if is in right edge
+            if (
+                index % DIAMONDS_ARRAY_WIDTH > 1
+                && Math.floor(index / DIAMONDS_ARRAY_WIDTH) > 1
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH - 1].kind
+                && diamond.kind === diamonds[index - DIAMONDS_ARRAY_WIDTH - 2].kind
+            ) {
+                return true;
+            }
+
+            return false;
+
+        });
+
+        if (!this.isPossibleToMove) {
+            this.gameState.mixDiamonds();
+        }
+    }
+
     checkEndOfGame() {
         if (
             !this.gameState.getLeftMovement() &&
             !this.gameState.getIsMoving() &&
             !this.gameState.getIsSwaping()
         ) {
+            media.isInLevel = false;
+            media.stopBackgroundMusic();
             const isPlayerWinner = this.gameState.isPlayerWinner();
+            const currentLevel = Number(this.gameState.level);
 
-            if (isPlayerWinner && gameLevels[this.gameState.level]) {
-                console.log('Odblokowano kolejny poziom!');
+            if (isPlayerWinner && gameLevels[currentLevel]) {
+                if (!userData.checkAvailabilityLevel(currentLevel + 1)) {
+                    userData.addNewLevel(currentLevel + 1)
+                }
             }
 
-            console.log('Jeżeli gracz ma wiecej punktów to aktualizacja high scores');
 
-            resultScreen.viewResultScreen(isPlayerWinner, this.gameState.getPlayerPoints(), this.gameState.level);
+            if (userData.getHighScores(currentLevel) < this.gameState.getPlayerPoints()) {
+                userData.setHighScore(currentLevel, this.gameState.getPlayerPoints())
+            }
+
+            resultScreen.viewResultScreen(isPlayerWinner, this.gameState.getPlayerPoints(), currentLevel);
 
         } else {
             this.animationFrame = window.requestAnimationFrame(() => this.animate());

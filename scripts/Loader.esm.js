@@ -23,7 +23,6 @@ class Loader extends Common {
         this.isAllLoaded = false;
         this.totalCounter++;
         this.totalElement = this.totalCounter;
-
         const image = new Image();
 
         image.src = imageUrl;
@@ -31,6 +30,19 @@ class Loader extends Common {
 
         return image;
 
+    }
+
+    loadSound(soundUrl) {
+        this.changeVisibilityScreen(this.element, VISIBLE_SCREEN);
+        this.isAllLoaded = false;
+        this.totalCounter++;
+
+        const audio = new Audio();
+
+        audio.addEventListener('canplaythrough', event => this.itemLoaded(event), false);
+        audio.src = soundUrl;
+
+        return audio;
     }
 
     itemLoaded(event) {
@@ -42,7 +54,6 @@ class Loader extends Common {
             this.clearFlags();
             this.changeVisibilityScreen(this.element, HIDDEN_SCREEN);
             window.dispatchEvent(new CustomEvent(DATALOADED_EVENT_NAME));
-
         }
 
     }
